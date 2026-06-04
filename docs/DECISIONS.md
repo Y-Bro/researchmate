@@ -1,5 +1,23 @@
 # Decisions
 
+## 2026-06-04 — Merge Day 0+1 into `main` (supersedes "no move to main")
+- **Decision:** merged `feature/scaffold` into `main`; `main` is the trunk from here on.
+- **Why:** aligns with the plan's "day branches off `main`" rhythm; the earlier "stay on feature/scaffold" was provisional.
+
+## 2026-06-04 — Load `.env` via python-dotenv (resolves config TODO 1)
+- **Decision:** use `python-dotenv` (option b); `config.py` calls `load_dotenv()` at import to populate `os.environ`. Added to `requirements.txt`.
+- **Why:** loading is automatic — no need to `export` vars each run.
+- **Alternatives:** exporting vars manually (option a) — rejected as error-prone.
+
+## 2026-06-04 — config & errors design choices
+- **`validate()` runs inside `load_settings()`** so every caller gets validated settings (fail-fast), rather than trusting callers to validate.
+- **Native exception chaining** (`raise XError(...) from e`) instead of a custom `cause` attribute — shows in tracebacks, idiomatic.
+- **Error subclasses are docstring-only** (no `__init__`) — they inherit the base; re-declaring added nothing.
+
+## 2026-06-04 — Test harness approach
+- **Decision:** pytest with a repo-root `conftest.py` that puts `src/` on `sys.path` and stubs `load_dotenv`; tests set env vars via `monkeypatch`.
+- **Why:** no `pyproject`/`pytest.ini` needed yet, and tests never read or depend on the real `.env`. Subclass tests are parametrized to avoid four identical copies.
+
 ## 2026-06-04 — Trunk branch & keeping existing config
 - **Decision:** keep working on `feature/scaffold` as the trunk (no switch to `main`); keep the existing `.claude/settings.json`, `.claude/settings.local.json`, and `.cursorignore`.
 - **Why:** avoid branch churn now; the scaffold permissions (git allow, `.env` deny) are useful and harmless to keep.
