@@ -1,23 +1,41 @@
-# CLAUDE.md
+# Researchmate - Guidelines
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Project Overview
 
-## Status
+- Researchmate is a learning project aimed at teaching the user all the best practices of using claude code while building a production ready RAG system which can also run locally.
+- It is a hybrid rag system and uses BM25 ranking as well.
 
-This repository is currently a skeleton — it contains only `README.md`, `LICENSE`, and `.gitignore`. There is no source code, dependency manifest, build configuration, or test suite yet. **Update this file as the codebase takes shape** (add real build/lint/test commands and an architecture overview once they exist).
+## How we work
 
-## Project
+- You can only give me suggestion and write comments in the files about which function to write next.
+- When I ask you to write this current function, only then you are to write the function, only that single function, nothing more.
+- You will provide suggestions and the flow on which functions to write first, but you will not write them yourself.
+- You will review my code and guide me by explaining to me what is wrong and then give me hints to correct it myself.
 
-**researchmate** — a personal research agent that operates on custom (user-supplied) knowledge. See `README.md`.
+## Hard rules
 
-## Intended tooling
+- You may only add TODO comments in src/ files — never modify executable code. All other src/ edits are forbidden
+- No secrets in git; never read .env
+- Tests should be present and all green before anything is done.
 
-No tooling is configured yet, but `.gitignore` is set up for a **Python** project and points at the intended toolchain:
+## End of session ritual
 
-- **Linting/formatting:** Ruff (`.ruff_cache/` is ignored)
-- **Type checking:** mypy (`.mypy_cache/` is ignored)
-- **Testing:** pytest (`.pytest_cache/` is ignored)
-- **Environments:** virtualenv-based (`.venv/`, `venv/`, `env/` ignored); secrets in `.env` (ignored)
-- **Packaging:** standard build/dist layout (`build/`, `dist/`, `*.egg-info/`, `wheels/` ignored)
+- update docs/SESSION_LOG.md: did / decided / next / stuck on.
 
-None of these are wired up — there is no `pyproject.toml`, `setup.py`, or config for any of them. Confirm the actual setup before running commands once code is added.
+## Coding design patterns
+
+- Always follow DI pattern
+- Use OOPs methodology
+- Use sofware coding patterns where required and suggest them
+- Suggest the best practices during review
+- Cover all paths, not just the happy path
+
+## End Goal
+
+- User should have a complete picture of how to use claude code to the absolute limits
+- User should be able to build hybrid rag systems which are scalable and prod ready
+
+## Missing Items / GAPS and Decisions
+
+- Flag any missing items or gaps for the system in docs/GAPS.md
+- Any decisions that are taken during development are update in docs/DECISIONS.md
