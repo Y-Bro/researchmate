@@ -51,26 +51,25 @@
 # Verify the exact google-genai import/call shape from its docs — don't trust
 # memory, the SDK changed names recently.
 
+from math import nan
 import time
 import logging
 from google import genai
 from common.config import Settings
 from common.errors import LLMError
 from google.genai import types
+from google.genai import errors
 
 
-
-
-
-logger = logging.getLogger(__name__)
-
-logger.info(msg="Test")
 
 # -----------------------------------------------------------------------------
 # TODO 2 — module-level logger
 # -----------------------------------------------------------------------------
 #   logger = logging.getLogger(__name__)
 # (Don't configure logging here — libraries log, applications configure.)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+logger.info(msg="Test HAHAHH")
 
 
 # -----------------------------------------------------------------------------
@@ -86,11 +85,94 @@ logger.info(msg="Test")
 #         # Think: should you also store the model name now, or read it from
 #         # settings each call? Pick one and be consistent.
 
+class LLMClient:
+    
+    def __init__(self, settings : Settings, *, client=None, model_name: str | None = None):
+        self.settings = settings
+        self.client = client if client is not None else genai.Client(api_key=settings.gemini_api_key)
+        self.model_name = model_name or settings.gemini_model
+
 
 # -----------------------------------------------------------------------------
 # TODO 4 — the public method: generate(prompt, system=None) -> str
 # -----------------------------------------------------------------------------
 # This is the only method the rest of the app calls. Pseudocode:
+
+    def generate(self, prompt, system=None):
+        if not prompt or not prompt.strip():
+            raise LLMError("Empty prompt", details={"prompt": prompt})
+
+        attempt = 0
+
+        while True:
+            try:
+                start = time.monotonic()
+                response = self.client.models.generate_content(
+                    model=self.model_name,
+                    contents=prompt,
+                    config = types.GenerateContentConfig(
+                        system_instruction=system,
+                        temperature=0.5,
+                    )
+                )
+
+                latency_ms = (time.monotonic() - start) * 1000
+
+                response_metadata = response.usage_metadata
+
+
+                print(response_metadata)
+
+                total_token_count = response_metadata.total_token_count
+                cached_token_count = response_metadata.cached_content_token_count
+                prompt_token_count = response_metadata.prompt_token_count
+                completion_token_count = response_metadata.candidates_token_count
+
+                logger.info(msg="LLM call successful. Metadata: ", extra = {"ttc" : total_token_count, "cachedtc" : cached_token_count, "ptc": prompt_token_count, "completiontc" : completion_token_count, "model" : self.model_name, "latency": latency_ms })
+
+                text = getattr(response, "text", None)
+
+                if not text or not text.strip():
+                    raise LLMError("LLM Did not return a response", 
+                    details={
+                        "finish_reason": getattr(
+                            response.candidates[0], "finish_reason", None
+                        ) if getattr(response, "candidates", None) else None,
+                    },
+                )
+
+                return text
+
+            except errors.APIError as e:
+
+                if e.code not in {429, 500, 502, 503}:
+                    raise LLMError(
+                        "Gemini call failed",
+                        details={
+                            "model": self.model_name,
+                            "status_code": e.code,
+                            "error_type": type(e).__name__,
+                        },
+                    ) from e
+
+                attempt += 1
+                if attempt > self.settings.max_retries:
+                    raise LLMError(
+                        "Gemini call failed after retries",
+                        details={
+                            "model": self.model_name,
+                            "status_code": e.code,
+                            "attempts": attempt,
+                            "error_type": type(e).__name__,
+                        },
+                    ) from e
+                sleep = 2 ** (attempt - 1)
+                logger.warning("Sleeping before retry")
+                time.sleep(sleep)
+                continue
+
+
+    
 #
 #   def generate(self, prompt, system=None):
 #       # validate input early — empty/blank prompt is a programming error,
