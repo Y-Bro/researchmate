@@ -1,4 +1,3 @@
-from math import nan  # TODO(fix #3): unused — delete this import
 import time
 import logging
 from google import genai
@@ -8,16 +7,8 @@ from google.genai import types
 from google.genai import errors
 
 
-# TODO(fix #3): a library must not call basicConfig — it reconfigures the ROOT
-# logger for the whole app as a side effect of import. Move logging setup to
-# main.py (the application entry point) and delete these three lines.
-logging.basicConfig(
-    level=logging.INFO
-)
 
 logger = logging.getLogger(__name__)
-logger.info(msg="Test HAHAHH")  # TODO(fix #3): delete — debug log that fires on import
-
 
 class LLMClient:
     
