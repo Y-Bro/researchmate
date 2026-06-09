@@ -12,7 +12,7 @@ def main():
 
         response = llm_client.generate("Top 5 best songs similar to sign of the times by harry styles")
 
-        print(response)
+        print(response, "this respoinse ?")
 
     except Exception as e:
         pass
