@@ -25,3 +25,6 @@ class RetrievalError(ResearchMateError):
 class ChunkingError(ResearchMateError):
     """Raised when document chunking failed."""
 
+class IngestionError(ResearchMateError):
+    """Rasied when data ingestions failed."""
+
