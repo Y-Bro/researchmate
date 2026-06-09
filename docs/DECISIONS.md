@@ -1,5 +1,24 @@
 # Decisions
 
+## 2026-06-09 — LLM retry policy (which errors, what backoff)
+- **Decision:** retry **only** transient HTTP statuses `{429, 500, 502, 503}` (rate-limit + server errors); back off exponentially `2 ** (attempt - 1)` → `1s, 2s, 4s…`, capped at `settings.max_retries`. Permanent errors (e.g. 400/401/403/404) raise `LLMError` immediately — retrying them is pointless.
+- **Why:** transient failures clear on their own; hammering a struggling API makes it worse, and retrying a bad key/request just wastes calls.
+- **Alternatives:** retry everything (rejected — masks real bugs, burns quota); no retries (rejected — networks fail).
+
+## 2026-06-09 — Timeout is passed to google-genai in milliseconds
+- **Decision:** `request_timeout` (seconds) is multiplied by 1000 when handed to `genai.Client(http_options={"timeout": ...})` because the SDK expects **milliseconds**.
+- **Why:** passing the raw value (30) set a 30 **ms** ceiling, so every real call timed out. Units bug, caught in review.
+- **Open:** transient/timeout failures are now caught via a generic `except Exception` retry rather than matching the SDK's specific timeout type — simpler but coarser. Tracked in GAPS.
+
+## 2026-06-09 — `except LLMError: raise` precedes the broad catch
+- **Decision:** in `generate()`, an `except LLMError: raise` clause comes **before** `except errors.APIError` / `except Exception`, so our own deliberate errors (e.g. empty-response) propagate untouched.
+- **Why:** Python matches `except` top-to-bottom; without this, the broad `except Exception` swallowed our `LLMError`, retried it `max_retries` times, and surfaced the wrong message. A passing test still hid it (it only asserted the *type*) — lesson logged.
+
+## 2026-06-09 — Temperature 0.5 for generation (provisional)
+- **Decision:** `temperature=0.5` in `llm_client` for now.
+- **Why:** placeholder to get the wrapper working.
+- **Trade-off / revisit:** likely **too high** for a grounded RAG system, which wants low/deterministic, faithful answers. Revisit on Day 4 (RAG pipeline / grounding contract); consider moving it into `Settings` rather than hardcoding. Tracked in GAPS.
+
 ## 2026-06-04 — Merge Day 0+1 into `main` (supersedes "no move to main")
 - **Decision:** merged `feature/scaffold` into `main`; `main` is the trunk from here on.
 - **Why:** aligns with the plan's "day branches off `main`" rhythm; the earlier "stay on feature/scaffold" was provisional.
