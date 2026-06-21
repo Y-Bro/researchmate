@@ -1,0 +1,28 @@
+# ChromaDB server for ResearchMate (dense vector store).
+# Pinned to 1.5.9 to match the Python client in requirements.txt — a client/server
+# major mismatch can fail in subtle ways, so keep these versions in lockstep.
+#
+# Usage (Podman or Docker — same file):
+#   podman compose up -d          # start in background
+#   podman compose ps             # status
+#   podman compose logs -f chroma # tail logs
+#   podman compose down           # stop (keeps the named volume / data)
+#   podman compose down -v        # stop AND wipe the vector data
+#
+# The app connects via chromadb.HttpClient(host="localhost", port=8000).
+
+services:
+  chroma:
+    image: chromadb/chroma:1.5.9
+    container_name: researchmate-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma-data:/data
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    restart: unless-stopped
+
+volumes:
+  chroma-data:

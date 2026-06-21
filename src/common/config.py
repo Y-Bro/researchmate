@@ -14,6 +14,9 @@ class Settings:
     request_timeout: int = 30
     max_retries: int = 3
     embedding_model: str = "text-embedding-004"
+    chroma_host: str = "localhost"
+    chroma_port: int = 8000
+    chroma_collection_name: str = "researchmate"
 
 
 def _require(name: str) -> str:
@@ -28,7 +31,10 @@ def load_settings() -> Settings:
         gemini_model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
         max_retries=int(os.getenv("MAX_RETRIES", "3")),
         request_timeout=int(os.getenv("REQUEST_TIMEOUT", "30")),
-        embedding_model=os.getenv("EMBEDDING_MODEL","text-embedding-004")
+        embedding_model=os.getenv("EMBEDDING_MODEL","text-embedding-004"),
+        chroma_host=os.getenv("CHROMA_HOST", "localhost"),
+        chroma_port=int(os.getenv("CHROMA_PORT", "8000")),
+        chroma_collection_name=os.getenv("CHROMA_COLLECTION", "researchmate")
     )
 
     validate(settings)
