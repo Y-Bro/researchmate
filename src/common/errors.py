@@ -28,3 +28,5 @@ class ChunkingError(ResearchMateError):
 class IngestionError(ResearchMateError):
     """Rasied when data ingestions failed."""
 
+class EmbeddingError(ResearchMateError):
+    """Raised what chunk embedding fails."""

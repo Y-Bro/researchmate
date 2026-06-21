@@ -13,6 +13,7 @@ class Settings:
     gemini_model: str = "gemini-2.5-flash"
     request_timeout: int = 30
     max_retries: int = 3
+    embedding_model: str = "text-embedding-004"
 
 
 def _require(name: str) -> str:
@@ -27,6 +28,7 @@ def load_settings() -> Settings:
         gemini_model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
         max_retries=int(os.getenv("MAX_RETRIES", "3")),
         request_timeout=int(os.getenv("REQUEST_TIMEOUT", "30")),
+        embedding_model=os.getenv("EMBEDDING_MODEL","text-embedding-004")
     )
 
     validate(settings)
