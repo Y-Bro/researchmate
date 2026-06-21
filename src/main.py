@@ -2,6 +2,7 @@ from common.errors import ConfigError
 from rag.llm_client import LLMClient
 from common.config import load_settings
 from ingestion.loaders import MarkdownLoader
+from ingestion.cli import build_loader_registery
 
 
 def main():
@@ -13,11 +14,14 @@ def main():
 
         # response = llm_client.generate("Top 5 best songs similar to sign of the times by harry styles")
 
-        # print(response, "this respoinse ?")
+        reg = build_loader_registery()
+        print(reg)
 
-        markdown_loader = MarkdownLoader()
 
-        markdown_loader.load(path="./src/engine.py")
+
+        
+
+        
 
     except Exception as e:
         raise e
