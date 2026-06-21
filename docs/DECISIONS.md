@@ -1,5 +1,11 @@
 # Decisions
 
+## 2026-06-21 — Retrieval mode is a toggle (dense | sparse | hybrid)
+- **Decision:** retrieval is built behind a `Retriever` abstraction with a config toggle (`retrieval_mode`): `dense` (VectorStore only), `sparse` (BM25 only), `hybrid` (RRF fusion of both). Build the **dense** path first for a working basic RAG; add `BM25Index` + `HybridRetriever` (RRF) after, slotting in via the same interface and a factory.
+- **Why:** the user wants to A/B compare dense vs hybrid on the same questions — an eval harness, not just a feature. A shared `Retriever` interface (returns ranked `{id, text, metadata, score}` records) lets the RAG pipeline stay identical while the retrieval strategy swaps underneath.
+- **How:** RAG pipeline depends on `Retriever` (not on VectorStore directly). `DenseRetriever` now; `BM25Retriever` + `HybridRetriever` later. A `make_retriever(mode, ...)` factory + `Settings.retrieval_mode` pick the concrete one. CLI/ask exposes `--mode` to flip per-run for comparison.
+- **Trade-off:** one extra abstraction layer up front (a Retriever interface the dense path doesn't strictly need yet) — accepted because retrofitting the toggle after wiring the pipeline to VectorStore directly would be churn.
+
 ## 2026-06-09 — LLM retry policy (which errors, what backoff)
 - **Decision:** retry **only** transient HTTP statuses `{429, 500, 502, 503}` (rate-limit + server errors); back off exponentially `2 ** (attempt - 1)` → `1s, 2s, 4s…`, capped at `settings.max_retries`. Permanent errors (e.g. 400/401/403/404) raise `LLMError` immediately — retrying them is pointless.
 - **Why:** transient failures clear on their own; hammering a struggling API makes it worse, and retrying a bad key/request just wastes calls.
